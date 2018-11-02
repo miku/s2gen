@@ -55,9 +55,9 @@ The use case is to allow for small converter programs for various formats:
 * generate input XML or JSON struct
 * generate target XML, JSON or SOLR struct
 
-Then write a single function:
+Then write a single function (should take less than one hour):
 
-```shell
+```go
 func main() {
     var s SourceDoc // e.g. XML
     var t TargetDoc // e.g. SOLR
@@ -69,4 +69,7 @@ func main() {
     fmt.Println(string(b))
 }
 ```
+
+Lookup tables should be aided by function to fetch mappings and tables from
+files, URLs, repos and more.
 
