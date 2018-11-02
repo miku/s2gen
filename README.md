@@ -10,3 +10,7 @@ automatically from XML.
 The SOLR schema is documented at [Documents, Fields, and Schema
 Design](https://lucene.apache.org/solr/guide/6_6/documents-fields-and-schema-design.html).
 
+The following features are implemented:
+
+* static fields with types and cardinality
+* dynamic fields
