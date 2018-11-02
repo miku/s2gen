@@ -1,6 +1,12 @@
 package solrstructgen
 
-import "encoding/xml"
+import (
+	"bytes"
+	"encoding/xml"
+	"fmt"
+	"io"
+	"strings"
+)
 
 // Schema was generated 2018-11-02 15:49:57 by tir on sol.
 type Schema struct {
@@ -90,4 +96,27 @@ type Schema struct {
 		Text            string `xml:",chardata"`
 		DefaultOperator string `xml:"defaultOperator,attr"`
 	} `xml:"solrQueryParser"`
+}
+
+// GoName converts a string into a more idiomatic name. Might miss edge cases.
+func GoName(s string) string {
+	s = strings.Replace(s, " ", "", -1)
+	s = strings.Replace(s, "-", "", -1)
+	parts := strings.Split(s, "_")
+	var camel []string
+	for _, p := range parts {
+		camel = append(camel, strings.Title(p))
+	}
+	return strings.Join(camel, "")
+}
+
+// RenderStringSlice renders a strings slice.
+func RenderStringSlice(s []string) string {
+	var buf bytes.Buffer
+	io.WriteString(&buf, "[]string{\n")
+	for _, v := range s {
+		fmt.Fprintf(&buf, "%q,\n", v)
+	}
+	io.WriteString(&buf, "}")
+	return buf.String()
 }

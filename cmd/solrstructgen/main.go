@@ -15,8 +15,9 @@ import (
 	"log"
 	"os"
 	"strings"
+	"text/template"
 
-	"github.com/miku/solrstructgen"
+	ssg "github.com/miku/solrstructgen"
 )
 
 var (
@@ -46,31 +47,28 @@ func (s *SomeSchema) MarshalJSON() ([]byte, error) {
 }
 `
 
-var (
-	SetTmpl = `func (%s *%s) Set(k, v string) error {
-		return nil
-	}`
-	MarshalTmpl = `func(%s *%s) MarshalJSON() ([]byte, error) {
-		return nil, nil
-	}`
-)
-
-// GoName converts a string into a more idiomatic name. Might miss edge cases.
-func GoName(s string) string {
-	s = strings.Replace(s, " ", "", -1)
-	s = strings.Replace(s, "-", "", -1)
-	parts := strings.Split(s, "_")
-	var camel []string
-	for _, p := range parts {
-		camel = append(camel, strings.Title(p))
-	}
-	return strings.Join(camel, "")
+// Methods template for dynamic field support.
+var Methods = `
+func ({{ .Var }} {{ .Name }}) IsValidDynamicFieldName(k string) bool {
 }
 
-func main() {
-	flag.Parse()
+// Set sets the value for a dynamic field, only. The key is validated against
+// the dynamic field wildcard (https://is.gd/qD1d1N).
+func ({{ .Var }} {{ .Name }}) Set(k, v string) error {
+	return nil
+}
 
+// MarshalJSON serializes static and dynamic fields.
+func({{ .Var }} {{ .Name }}) MarshalJSON() ([]byte, error) {
+	return nil, nil
+}
+
+`
+
+func main() {
 	var r io.Reader = os.Stdin
+
+	flag.Parse()
 	if flag.NArg() > 0 {
 		f, err := os.Open(flag.Arg(0))
 		if err != nil {
@@ -83,7 +81,7 @@ func main() {
 	dec := xml.NewDecoder(r)
 	dec.Strict = false
 
-	var schema solrstructgen.Schema
+	var schema ssg.Schema
 	if err := dec.Decode(&schema); err != nil {
 		log.Fatal(err)
 	}
@@ -95,15 +93,22 @@ func main() {
 		log.Fatal("schema does not has a name")
 	}
 
-	io.WriteString(&buf, GoName(schema.Name))
+	// Fix name of type and variable name.
+	typeName := ssg.GoName(schema.Name)
+	if typeName == "" {
+		log.Fatal("the go name reduced to the empty string")
+	}
+	varName := strings.ToLower(typeName[0:1])
+
+	io.WriteString(&buf, ssg.GoName(schema.Name))
 	io.WriteString(&buf, " struct {\n")
 
 	for _, f := range schema.Fields.Field {
 		log.Println(f.Name, f.Type)
 		if f.MultiValued == "true" {
-			fmt.Fprintf(&buf, "%s []string\n", GoName(f.Name))
+			fmt.Fprintf(&buf, "%s []string\n", ssg.GoName(f.Name))
 		} else {
-			fmt.Fprintf(&buf, "%s string\n", GoName(f.Name))
+			fmt.Fprintf(&buf, "%s string\n", ssg.GoName(f.Name))
 		}
 		// XXX: Struct with normal fields.
 		// XXX: Methods to add dynamic fields with checks, e.g. doc.Set("field", "value")
@@ -112,7 +117,62 @@ func main() {
 	log.Printf("The %v %v schema contains %d static fields.\n",
 		schema.Name, schema.Version, len(schema.Fields.Field))
 
+	io.WriteString(&buf, `
+	dynamicFields []struct {
+		Key    string
+		Values []string
+	}
+	`)
+
 	io.WriteString(&buf, "}")
+
+	var dnames []string
+	for _, f := range schema.Fields.DynamicField {
+		dnames = append(dnames, f.Name)
+	}
+
+	mtmpl := `
+	// allowedDynamicFieldName return true, if the name of the field matches
+	// one of the dynamic field patterns.
+	func ({{ .Var }} {{ .Name }}) allowedDynamicFieldName(k string) (ok bool, err error) {
+		return WildcardMatch(k, {{ .NameSlice }})
+	}
+
+	// WildcardMatch returns true, if the wildcard covers a given string s. If the
+	// wildcard is invalid, an error is returned.
+	func WildcardMatch(s, wildcards []string) (bool, error) {
+		for _, w := range wildcards {
+			p := strings.Replace(w, "*", ".*", -1)
+			p = "^" + p + "$"
+			r, err := regexp.Compile(p)
+			if err != nil {
+				return false, err
+			}
+			if r.MatchString(s) {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+	`
+
+	t := template.New("methods")
+	t, err := t.Parse(mtmpl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var data = struct {
+		Var       string
+		Name      string
+		NameSlice string
+	}{
+		Var: varName, Name: typeName, NameSlice: ssg.RenderStringSlice(dnames),
+	}
+
+	if err := t.Execute(&buf, data); err != nil {
+		log.Fatal(err)
+	}
 
 	if *skipFormatting {
 		fmt.Println(buf.String())
