@@ -73,3 +73,9 @@ func main() {
 Lookup tables should be aided by function to fetch mappings and tables from
 files, URLs, repos and more.
 
+
+## TODO
+
+* [ ] document generation
+* [ ] parsing of existing solr docs and accessors for dynamic fields
+
