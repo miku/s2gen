@@ -161,7 +161,7 @@ type VuFindBibliographicIndex struct {
 
 // allowedDynamicFieldName returns true, if the name of the field matches
 // one of the dynamic field patterns.
-func (v *VuFindBibliographicIndex) allowedDynamicFieldName(k string) (ok bool, err error) {
+func (v *VuFindBibliographicIndex) allowedDynamicFieldName(k string) error {
 	return WildcardMatch(k, []string{
 		"callnumber_*",
 		"barcode_*",
@@ -193,41 +193,37 @@ func (v *VuFindBibliographicIndex) allowedDynamicFieldName(k string) (ok bool, e
 	})
 }
 
-// Set sets the value of a dynamic field. Can be a single string or a string
-// slice.
-func (v *VuFindBibliographicIndex) Set(k string, value interface{}) error {
-	ok, err := v.allowedDynamicFieldName(k)
-	if err != nil {
+// Set sets the value of a dynamic field.
+func (v *VuFindBibliographicIndex) Set(key string, value interface{}) error {
+	if err := v.allowedDynamicFieldName(key); err != nil {
 		return err
 	}
-	if !ok {
-		return fmt.Errorf("key does not match any dynamic field definition: %s", k)
-	}
-	v.dynamicFields[k] = value
+	v.dynamicFields[key] = value
 	return nil
 }
 
-// GetValue returns a single string for a given key.
-func (v *VuFindBibliographicIndex) GetValue(k string) (string, error) {
+// StringValue returns a single string for a given key.
+func (v *VuFindBibliographicIndex) StringValue(k string) (string, error) {
 	value, ok := v.dynamicFields[k]
 	if !ok {
 		return "", fmt.Errorf("key not found: %s", k)
 	}
-	switch t := value.(type) {
-	case string:
-		return t, nil
-	default:
-		return "", fmt.Errorf("value is not a string, but %T", value)
+	s, ok := value.(string)
+	if !ok {
+		return "", fmt.Errorf("value is not a string")
 	}
+	return s, nil
 }
 
-// GetValues returns a list of values for a dynamic field.
-func (v *VuFindBibliographicIndex) GetValues(k string) (result []string, err error) {
+// StringValues returns a list of values for a dynamic field.
+func (v *VuFindBibliographicIndex) StringValues(k string) (result []string, err error) {
 	value, ok := v.dynamicFields[k]
 	if !ok {
 		return nil, fmt.Errorf("key not found: %s", k)
 	}
 	switch t := value.(type) {
+	case []string:
+		return t, nil
 	case []interface{}:
 		for _, vv := range t {
 			result = append(result, fmt.Sprintf("%s", vv))
@@ -238,22 +234,21 @@ func (v *VuFindBibliographicIndex) GetValues(k string) (result []string, err err
 	}
 }
 
-// WildcardMatch returns true, if the wildcard covers a given string s. If the
-// wildcard is invalid, an error is returned.
-func WildcardMatch(s string, wildcards []string) (bool, error) {
+// WildcardMatch returns nil, if the string s conforms to any of the given wildcards.
+func WildcardMatch(s string, wildcards []string) error {
 	// XXX: It is possible, that a static field will match a dynamic field.
 	for _, w := range wildcards {
 		p := strings.Replace(w, "*", ".*", -1)
 		p = "^" + p + "$"
 		r, err := regexp.Compile(p)
 		if err != nil {
-			return false, err
+			return err
 		}
 		if r.MatchString(s) {
-			return true, nil
+			return nil
 		}
 	}
-	return false, nil
+	return fmt.Errorf("none of the %d wildcards covers %s", len(wildcards), s)
 }
 
 func main() {
@@ -264,5 +259,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(doc)
+	fmt.Println(doc.Title)
+	// v, err := doc.StringValues("format_dezi4")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(v)
 }
