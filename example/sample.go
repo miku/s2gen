@@ -1,6 +1,10 @@
-package example
+package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -194,7 +198,8 @@ func (v VuFindBibliographicIndex) allowedDynamicFieldName(k string) (ok bool, er
 
 // WildcardMatch returns true, if the wildcard covers a given string s. If the
 // wildcard is invalid, an error is returned.
-func WildcardMatch(s, wildcards []string) (bool, error) {
+func WildcardMatch(s string, wildcards []string) (bool, error) {
+	// XXX: It is possible, that a static field will match a dynamic field.
 	for _, w := range wildcards {
 		p := strings.Replace(w, "*", ".*", -1)
 		p = "^" + p + "$"
@@ -208,3 +213,15 @@ func WildcardMatch(s, wildcards []string) (bool, error) {
 	}
 	return false, nil
 }
+
+func main() {
+	var doc VuFindBibliographicIndex
+
+	dec := json.NewDecoder(os.Stdin)
+	if err := dec.Decode(&doc); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(doc)
+}
+

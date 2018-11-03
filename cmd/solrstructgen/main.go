@@ -54,6 +54,19 @@ func main() {
 
 	var buf bytes.Buffer
 
+	io.WriteString(&buf, `
+	package main
+
+	import (
+		"encoding/json"
+		"fmt"
+		"log"
+		"os"
+		"regexp"
+		"strings"
+	)
+	`)
+
 	// Fix name of type and variable name.
 	typeName := ssg.GoName(schema.Name)
 	if typeName == "" {
@@ -110,7 +123,8 @@ func main() {
 
 	// WildcardMatch returns true, if the wildcard covers a given string s. If the
 	// wildcard is invalid, an error is returned.
-	func WildcardMatch(s, wildcards []string) (bool, error) {
+	func WildcardMatch(s string, wildcards []string) (bool, error) {
+		// XXX: It is possible, that a static field will match a dynamic field.
 		for _, w := range wildcards {
 			p := strings.Replace(w, "*", ".*", -1)
 			p = "^" + p + "$"
@@ -123,6 +137,17 @@ func main() {
 			}
 		}
 		return false, nil
+	}
+
+	func main() {
+		var doc {{ .Name }}
+
+		dec := json.NewDecoder(os.Stdin)
+		if err := dec.Decode(&doc); err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println(doc)
 	}
 	`
 
