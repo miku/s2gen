@@ -156,15 +156,12 @@ type VuFindBibliographicIndex struct {
 	FirstIndexed         string      `json:"first_indexed"`
 	LastIndexed          string      `json:"last_indexed"`
 
-	dynamicFields []struct {
-		Key    string
-		Values []string
-	}
+	dynamicFields map[string]interface{} `json:"-"`
 }
 
 // allowedDynamicFieldName returns true, if the name of the field matches
 // one of the dynamic field patterns.
-func (v VuFindBibliographicIndex) allowedDynamicFieldName(k string) (ok bool, err error) {
+func (v *VuFindBibliographicIndex) allowedDynamicFieldName(k string) (ok bool, err error) {
 	return WildcardMatch(k, []string{
 		"callnumber_*",
 		"barcode_*",
@@ -196,6 +193,51 @@ func (v VuFindBibliographicIndex) allowedDynamicFieldName(k string) (ok bool, er
 	})
 }
 
+// Set sets the value of a dynamic field. Can be a single string or a string
+// slice.
+func (v *VuFindBibliographicIndex) Set(k string, value interface{}) error {
+	ok, err := v.allowedDynamicFieldName(k)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("key does not match any dynamic field definition: %s", k)
+	}
+	v.dynamicFields[k] = value
+	return nil
+}
+
+// GetValue returns a single string for a given key.
+func (v *VuFindBibliographicIndex) GetValue(k string) (string, error) {
+	value, ok := v.dynamicFields[k]
+	if !ok {
+		return "", fmt.Errorf("key not found: %s", k)
+	}
+	switch t := value.(type) {
+	case string:
+		return t, nil
+	default:
+		return "", fmt.Errorf("value is not a string, but %T", value)
+	}
+}
+
+// GetValues returns a list of values for a dynamic field.
+func (v *VuFindBibliographicIndex) GetValues(k string) (result []string, err error) {
+	value, ok := v.dynamicFields[k]
+	if !ok {
+		return nil, fmt.Errorf("key not found: %s", k)
+	}
+	switch t := value.(type) {
+	case []interface{}:
+		for _, vv := range t {
+			result = append(result, fmt.Sprintf("%s", vv))
+		}
+		return result, nil
+	default:
+		return nil, fmt.Errorf("value is not a slice, but %T", v)
+	}
+}
+
 // WildcardMatch returns true, if the wildcard covers a given string s. If the
 // wildcard is invalid, an error is returned.
 func WildcardMatch(s string, wildcards []string) (bool, error) {
@@ -224,4 +266,3 @@ func main() {
 
 	fmt.Println(doc)
 }
-
