@@ -95,12 +95,12 @@ func main() {
 
 	io.WriteString(&buf, "}")
 
+	// Support and struct methods.
 	var dnames []string
 	for _, f := range schema.Fields.DynamicField {
 		dnames = append(dnames, f.Name)
 	}
 
-	// XXX: It is possible, that a static field will match a dynamic field.
 	mtmpl := `
 	// allowedDynamicFieldName returns true, if the name of the field matches
 	// one of the dynamic field patterns.
@@ -126,8 +126,9 @@ func main() {
 	}
 	`
 
-	t := template.New("methods")
-	t, err := t.Parse(mtmpl)
+	// Render template.
+	// XXX: It is possible, that a static field will match a dynamic field.
+	t, err := template.New("methods").Parse(mtmpl)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -137,13 +138,16 @@ func main() {
 		Name      string
 		NameSlice string
 	}{
-		Var: varName, Name: typeName, NameSlice: ssg.RenderStringSlice(dnames),
+		Var:       varName,
+		Name:      typeName,
+		NameSlice: ssg.RenderStringSlice(dnames),
 	}
 
 	if err := t.Execute(&buf, data); err != nil {
 		log.Fatal(err)
 	}
 
+	// Format output.
 	if *skipFormatting {
 		fmt.Println(buf.String())
 	} else {
