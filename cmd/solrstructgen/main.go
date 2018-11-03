@@ -87,9 +87,12 @@ func main() {
 
 	for _, f := range schema.Fields.Field {
 		log.Println(f.Name, f.Type)
-		if f.MultiValued == "true" {
+		switch {
+		case f.Name == "_version_":
+			fmt.Fprintf(&buf, "%s json.Number `json:\"%s\"`\n", ssg.GoName(f.Name), f.Name)
+		case f.MultiValued == "true":
 			fmt.Fprintf(&buf, "%s []string `json:\"%s\"`\n", ssg.GoName(f.Name), f.Name)
-		} else {
+		default:
 			fmt.Fprintf(&buf, "%s string `json:\"%s\"`\n", ssg.GoName(f.Name), f.Name)
 		}
 		// XXX: Struct with normal fields.
