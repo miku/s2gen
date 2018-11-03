@@ -13,8 +13,15 @@ Design](https://lucene.apache.org/solr/guide/6_6/documents-fields-and-schema-des
 
 The following features are implemented:
 
+* generating a struct from a SOLR schema.xml
+* generating a indexable JSON document from a struct
+* parsing SOLR documents into a struct
 * static fields with types and cardinality
 * dynamic fields
+
+Not supported or low priority:
+
+* type inference (to many variations, so we use strings for now)
 
 ## Usage
 
@@ -73,6 +80,24 @@ func main() {
 
 Lookup tables should be aided by function to fetch mappings and tables from
 files, URLs, repos and more.
+
+Another use case is the parsing and manipulation of SOLR documents in general:
+fetch, parse, modify, serialize, index. For example, you want to rewrite a
+subset of documents and modify a single field, then reindex.
+
+For high-performance modifications, use smaller, focussed structs (with only
+one or two relevant fields).
+
+```go
+type Doc struct {
+    ID          string
+    ISSN        []string
+    Institution []string
+    ...
+}
+```
+
+* Parallel fetch, modification, indexing.
 
 
 ## TODO
