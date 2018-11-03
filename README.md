@@ -102,6 +102,8 @@ type Doc struct {
 
 ## TODO
 
-* [ ] document generation
-* [ ] parsing of existing solr docs and accessors for dynamic fields
+* [ ] schema.xml -> dynamic fields
+* [ ] marshal dynamic fields, MarshalJSON
+* [ ] unmarshal dynamic fields, UnmarshalJSON
+* [ ] tests
 
