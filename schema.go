@@ -12,17 +12,22 @@ import (
 // idiomatic Go name.
 var UppercaseWords = []string{
 	"id",
+	"iln",
 	"isbn",
 	"ismn",
 	"issn",
+	"json",
 	"lccn",
 	"marc",
+	"marcxml",
 	"oclc",
+	"ppn",
 	"rsn",
 	"rvk",
 	"uri",
 	"url",
 	"urn",
+	"xml",
 	"zdb",
 }
 
