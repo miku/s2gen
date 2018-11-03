@@ -1,4 +1,4 @@
-solrstructgen: cmd/solrstructgen/main.go
+solrstructgen: cmd/solrstructgen/main.go schema.go
 	go build -o $@ $<
 
 clean:

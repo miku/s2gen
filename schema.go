@@ -8,6 +8,33 @@ import (
 	"strings"
 )
 
+// UppercaseWords contains lowercase strings, which should be uppercased for an
+// idiomatic Go name.
+var UppercaseWords = []string{
+	"id",
+	"isbn",
+	"ismn",
+	"issn",
+	"lccn",
+	"marc",
+	"oclc",
+	"rsn",
+	"rvk",
+	"uri",
+	"url",
+	"urn",
+	"zdb",
+}
+
+func stringSliceContains(ss []string, s string) bool {
+	for _, v := range ss {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
 // Schema was generated 2018-11-02 15:49:57 by tir on sol.
 type Schema struct {
 	XMLName xml.Name `xml:"schema"`
@@ -105,7 +132,11 @@ func GoName(s string) string {
 	parts := strings.Split(s, "_")
 	var camel []string
 	for _, p := range parts {
-		camel = append(camel, strings.Title(p))
+		if stringSliceContains(UppercaseWords, strings.ToLower(p)) {
+			camel = append(camel, strings.ToUpper(p))
+		} else {
+			camel = append(camel, strings.Title(p))
+		}
 	}
 	return strings.Join(camel, "")
 }

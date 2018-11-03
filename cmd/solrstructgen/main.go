@@ -7,6 +7,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"encoding/xml"
 	"flag"
 	"fmt"
@@ -24,47 +25,6 @@ var (
 	skipFormatting = flag.Bool("F", false, "skip formatting")
 )
 
-// XXX: This is just a snippet for reference.
-var t = `
-type SomeSchema struct {
-	Title          string
-	ContainerTitle string
-
-	dfields []struct {
-		Key   string
-		Value string
-	}
-}
-
-func (s *SomeSchema) Set(key, value string) error {
-	// Check if key is static or dynamic.
-	// Check for dynamic key regex contraints.
-	// Add value to dfields.
-}
-
-func (s *SomeSchema) MarshalJSON() ([]byte, error) {
-	// Marshal dynamic fields into normal fields.
-}
-`
-
-// Methods template for dynamic field support.
-var Methods = `
-func ({{ .Var }} {{ .Name }}) IsValidDynamicFieldName(k string) bool {
-}
-
-// Set sets the value for a dynamic field, only. The key is validated against
-// the dynamic field wildcard (https://is.gd/qD1d1N).
-func ({{ .Var }} {{ .Name }}) Set(k, v string) error {
-	return nil
-}
-
-// MarshalJSON serializes static and dynamic fields.
-func({{ .Var }} {{ .Name }}) MarshalJSON() ([]byte, error) {
-	return nil, nil
-}
-
-`
-
 func main() {
 	var r io.Reader = os.Stdin
 
@@ -78,7 +38,11 @@ func main() {
 		r = f
 	}
 
-	dec := xml.NewDecoder(r)
+	// Calculate a hash of the content.
+	h := sha1.New()
+	tee := io.TeeReader(r, h)
+
+	dec := xml.NewDecoder(tee)
 	dec.Strict = false
 
 	var schema ssg.Schema
@@ -86,19 +50,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var buf bytes.Buffer
-	io.WriteString(&buf, "type ")
+	digest := fmt.Sprintf("%x", h.Sum(nil))
 
-	if schema.Name == "" {
-		log.Fatal("schema does not has a name")
-	}
+	var buf bytes.Buffer
 
 	// Fix name of type and variable name.
 	typeName := ssg.GoName(schema.Name)
 	if typeName == "" {
 		log.Fatal("the go name reduced to the empty string")
 	}
+	// Name to use for struct methods.
 	varName := strings.ToLower(typeName[0:1])
+
+	fmt.Fprintf(&buf, "// %s generated from %s.\n", typeName, digest)
+	io.WriteString(&buf, "type ")
+
+	if schema.Name == "" {
+		log.Fatal("schema does not has a name")
+	}
 
 	io.WriteString(&buf, ssg.GoName(schema.Name))
 	io.WriteString(&buf, " struct {\n")
@@ -106,9 +75,9 @@ func main() {
 	for _, f := range schema.Fields.Field {
 		log.Println(f.Name, f.Type)
 		if f.MultiValued == "true" {
-			fmt.Fprintf(&buf, "%s []string\n", ssg.GoName(f.Name))
+			fmt.Fprintf(&buf, "%s []string `json:\"%s\"`\n", ssg.GoName(f.Name), f.Name)
 		} else {
-			fmt.Fprintf(&buf, "%s string\n", ssg.GoName(f.Name))
+			fmt.Fprintf(&buf, "%s string `json:\"%s\"`\n", ssg.GoName(f.Name), f.Name)
 		}
 		// XXX: Struct with normal fields.
 		// XXX: Methods to add dynamic fields with checks, e.g. doc.Set("field", "value")
@@ -131,8 +100,9 @@ func main() {
 		dnames = append(dnames, f.Name)
 	}
 
+	// XXX: It is possible, that a static field will match a dynamic field.
 	mtmpl := `
-	// allowedDynamicFieldName return true, if the name of the field matches
+	// allowedDynamicFieldName returns true, if the name of the field matches
 	// one of the dynamic field patterns.
 	func ({{ .Var }} {{ .Name }}) allowedDynamicFieldName(k string) (ok bool, err error) {
 		return WildcardMatch(k, {{ .NameSlice }})
