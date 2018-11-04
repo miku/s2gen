@@ -23,7 +23,7 @@ type {{ .Name }} struct {
 		{{ .GoName }} {{ .GoType }} {{ .GoTag -}}
 	{{ end }}
 
-    fields []*dynamicField `json:"-"`
+    fields []*dynamicField
 }
 
 // New{{ .Name }} creates a new document conforming to a schema for the dynamic fields.
@@ -97,9 +97,9 @@ func toStringSlice(is []interface{}) (values []string) {
 
 // dynamicField represents a more generic multi-valued field.
 type dynamicField struct {
-	name          string              `json:"name"`
-	isMultiValued bool                `json:"multivalued"`
-	fmap          map[string][]string `json:"v"`
+	name          string
+	isMultiValued bool
+	fmap          map[string][]string
 }
 
 // ensureMap lazily initializes the map.
