@@ -11,7 +11,7 @@ $ go get github.com/miku/s2gen/cmd/s2gen
 
 ## About
 
-Solr allows to specify a
+SOLR allows to specify a
 [schema](https://lucene.apache.org/solr/guide/6_6/documents-fields-and-schema-design.html),
 consisting of fields, types, cardinality and dynamic types. To facilitate the
 creation of documents conforming to a SOLR schema, it would be nice, to
