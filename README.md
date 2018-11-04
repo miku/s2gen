@@ -1,14 +1,15 @@
 # s2gen (solr struct generator)
 
-Generate code to represent [SOLR](http://lucene.apache.org/solr/) documents in Go from a schema.xml file.
+Another code generation experiment. Generate code to represent
+[SOLR](http://lucene.apache.org/solr/) documents in Go from a schema.xml file.
+
+This is an experimental project with many missing pieces.
 
 ## Install
 
 ```shell
 $ go get github.com/miku/s2gen/cmd/s2gen
 ```
-
-This is experimental software.
 
 ## About
 
