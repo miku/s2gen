@@ -30,7 +30,9 @@ The following features are implemented:
 
 Not supported or low priority:
 
-* type inference (to many variations, so we only use strings for now)
+* type inference (to many variations, so we only use strings for now) -
+  reference of [SOLR builtin
+types](https://lucene.apache.org/solr/guide/6_6/field-types-included-with-solr.html)
 
 ## Example SOLR schema
 
