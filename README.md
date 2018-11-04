@@ -101,7 +101,11 @@ compiling the executable, we copy the template data into `main.go`.
 2. Copy from template into [main.go](https://github.com/miku/s2gen/blob/master/cmd/s2gen/main.go).
 3. Regenerate
    [example/generated/main.go](https://github.com/miku/s2gen/blob/master/example/generated/main.go)
-via `curl -sL https://git.io/fxhhz | ./s2gen > example/generated/main.go`.
+via
+
+```shell
+$ curl -sL https://git.io/fxhhz | ./s2gen > example/generated/main.go
+```
 
 ## Example
 
