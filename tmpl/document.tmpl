@@ -262,6 +262,18 @@ func (f *dynamicField) Values(key string) (values []string, ok bool) {
 	return values, true
 }
 
+// MustValue returns the value or an empty string.
+func (f *dynamicField) MustValue(key string) string {
+    value, _ := f.Value(key)
+    return value
+}
+
+// MustValues returns slice of values of a nil slice.
+func (f *dynamicField) MustValues(key string) []string {
+    values, _ := f.Values(key)
+    return values
+}
+
 func main() {
 	dec := json.NewDecoder(os.Stdin)
 	doc := New{{ .Name }}()
