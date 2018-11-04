@@ -24,6 +24,8 @@ Not supported or low priority:
 
 ## Example SOLR schema
 
+* Taken from a VuFind project (see also: [schema.xml](https://github.com/vufind-org/vufind/blob/master/solr/vufind/biblio/conf/schema.xml)).
+
 ```xml
 <schema name="VuFind Bibliographic Index" version="1.2">
   ...
