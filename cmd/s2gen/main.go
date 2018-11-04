@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"go/format"
 	"io"
-	"log"
 	"os"
 	"os/user"
 	"strings"
@@ -18,6 +17,7 @@ import (
 	"time"
 
 	ssg "github.com/miku/s2gen"
+	log "github.com/sirupsen/logrus"
 )
 
 const Version = "0.1.0"
