@@ -1,4 +1,4 @@
-package solrstructgen
+package s2gen
 
 import (
 	"io/ioutil"

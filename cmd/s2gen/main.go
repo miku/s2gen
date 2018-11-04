@@ -17,7 +17,7 @@ import (
 	"text/template"
 	"time"
 
-	ssg "github.com/miku/solrstructgen"
+	ssg "github.com/miku/s2gen"
 )
 
 const Version = "0.1.0"
