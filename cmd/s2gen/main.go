@@ -315,6 +315,7 @@ func (f *dynamicField) isCompatible(key string) error {
 
 // addStrings tries to add a list of strings to the given key k
 func (f *dynamicField) addStrings(k string, ss []string) error {
+	f.ensureMap()
 	switch f.isMultiValued {
 	case true:
 		f.fmap[k] = append(f.fmap[k], ss...)
@@ -332,6 +333,7 @@ func (f *dynamicField) addStrings(k string, ss []string) error {
 
 // setStrings tries to set a list of strings to the given key k
 func (f *dynamicField) setStrings(k string, ss []string) error {
+	f.ensureMap()
 	switch f.isMultiValued {
 	case true:
 			f.fmap[k] = ss
@@ -347,6 +349,7 @@ func (f *dynamicField) setStrings(k string, ss []string) error {
 
 // Clear remove all values for a key.
 func (f *dynamicField) Clear(k string) {
+	f.ensureMap()
 	if _, ok := f.fmap[k]; ok {
 		delete(f.fmap, k)
 	}
