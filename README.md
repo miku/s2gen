@@ -63,7 +63,7 @@ types](https://lucene.apache.org/solr/guide/6_6/field-types-included-with-solr.h
 First, generate the code from the SOLR schema.
 
 ```shell
-$ s2gen < schema.xml > example.go
+$ s2gen < fixtures/schema.xml
 ```
 
 As an example, let say this generated a struct named `VuFindBibliographicIndex`
