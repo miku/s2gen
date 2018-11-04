@@ -518,4 +518,4 @@ func main() {
 * [x] marshal dynamic fields, MarshalJSON
 * [x] unmarshal dynamic fields, UnmarshalJSON
 * [ ] tests
-
+* [ ] test for potentially ambigue dynamic field names, `local_heading_facet_*` and `local_heading_*`
