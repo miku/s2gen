@@ -1,6 +1,16 @@
 # s2gen (solr struct generator)
 
-Generate code to represent SOLR documents in Go.
+Generate code to represent SOLR documents in Go from a schema.xml file.
+
+## Install
+
+```shell
+$ go get github.com/miku/s2gen/cmd/s2gen
+```
+
+This is experimental software.
+
+## About
 
 Solr allows to specify a
 [schema](https://lucene.apache.org/solr/guide/6_6/documents-fields-and-schema-design.html),
@@ -52,7 +62,7 @@ Not supported or low priority:
 First, generate the code from the SOLR schema.
 
 ```shell
-$ s2gen < schema.xml > schema.go
+$ s2gen < schema.xml > example.go
 ```
 
 As an example, let say this generated a struct named `VuFindBibliographicIndex`
