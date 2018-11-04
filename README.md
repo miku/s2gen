@@ -78,7 +78,7 @@ doc.Fulltext = "This is the full text"
 doc.Author = append(doc.Author, "Samuel Johnson")
 
 // Set a single dynamic field. Error, if dynamic field is not valid.
-err := doc.Set("format_de15", "Book")
+err := doc.MustField("format_*").Set("format_de15", "Book")
 
 // Create an indexable document.
 b, _ := json.Marshal(doc)
