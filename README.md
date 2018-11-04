@@ -582,5 +582,8 @@ func main() {
 * [x] schema.xml -> dynamic fields
 * [x] marshal dynamic fields, MarshalJSON
 * [x] unmarshal dynamic fields, UnmarshalJSON
-* [ ] tests
+* [ ] more tests
 * [ ] test for potentially ambigue dynamic field names, `local_heading_facet_*` and `local_heading_*`
+* [ ] currently, `Set`, `Add`, `Clear`, `Value`, `Values` work on dynamic
+  fields, which first must be accessed via `doc.MustField(name).Add(key,
+value)`, this might all be shortened to `doc.Add(key, value)` and so on.
