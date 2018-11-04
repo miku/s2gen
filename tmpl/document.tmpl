@@ -13,6 +13,9 @@ import (
 )
 
 // {{ .Name }} genereated from schema sha1:{{ .Digest }}.
+// This struct supports marshaling and unmarshaling of SOLR documents conforming to the
+// schema that was used to generate this struct. Static fields are struct fields, dynamic
+// fields can be modified by using {{ .VarName }}.Field("dyn_*").Set(...) and so on.
 type {{ .Name }} struct {
 	{{ range .Fields }}
 		{{ .GoName }} {{ .GoType }} {{ .GoTag -}}
