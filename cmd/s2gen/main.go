@@ -449,7 +449,7 @@ func (f *dynamicField) MustValues(key string) []string {
 
 func main() {
 	dec := json.NewDecoder(os.Stdin)
-	doc := New{{ .Name }}()
+	var doc {{ .Name }}
 
 	if err := dec.Decode(&doc); err != nil {
 		log.Fatal(err)
