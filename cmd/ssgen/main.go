@@ -29,12 +29,14 @@ var (
 	useVersionSuffix = flag.String("vs", "", "add some versioning suffix, like v0 to struct name")
 )
 
+// field contains information about static fields.
 type field struct {
 	GoName string
 	GoType string
 	GoTag  string
 }
 
+// dynamicField contains basic information on a dynamic field
 type dynamicField struct {
 	Name          string
 	IsMultiValued string
@@ -91,6 +93,7 @@ func main() {
 	}
 	varName := strings.ToLower(name[0:1])
 
+	// Optional suffixes.
 	if *useHashSuffix {
 		name = name + digest[0:8]
 	}
@@ -109,6 +112,7 @@ func main() {
 		hostname = "an unknown host"
 	}
 
+	// Payload for template.
 	data := payload{
 		Name:    name,
 		VarName: varName,
@@ -148,7 +152,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
 		log.Fatal(err)
