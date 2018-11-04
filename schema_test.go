@@ -9,8 +9,8 @@ import (
 
 // TestSchemaGeneration tests, whether we emit a runnable code snippet.
 func TestSchemaGeneration(t *testing.T) {
-	t.Logf("(1/5) building executable")
-	cmd := exec.Command("go", "build", "-o", "solrstructgen", "cmd/solrstructgen/main.go")
+	t.Logf("(1/5) building s2gen executable")
+	cmd := exec.Command("go", "build", "-o", "s2gen", "cmd/s2gen/main.go")
 	if err := cmd.Run(); err != nil {
 		t.Fatal(err)
 	}
@@ -19,7 +19,7 @@ func TestSchemaGeneration(t *testing.T) {
 	schema := "fixtures/schema.xml"
 	t.Logf("(2/5) generating code from %s", schema)
 
-	cmd = exec.Command("./solrstructgen")
+	cmd = exec.Command("./s2gen")
 
 	f, err := os.Open(schema)
 	if err != nil {
@@ -29,7 +29,7 @@ func TestSchemaGeneration(t *testing.T) {
 
 	cmd.Stdin = f
 
-	fo, err := ioutil.TempFile("", "solrstructgen-test-*.go")
+	fo, err := ioutil.TempFile("", "s2gen-test-*.go")
 	if err != nil {
 		t.Fatal(err)
 	}
