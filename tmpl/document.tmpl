@@ -86,6 +86,24 @@ func ({{ .VarName }} *{{ .Name }}) UnmarshalJSON(pp []byte) error {
 	return nil
 }
 
+// DynamicFieldnames returns the dynamic field wildcards.
+func ({{ .VarName }} *{{ .Name }}) DynamicFieldnames() (names []string) {
+    for _, f := range {{ .VarName }}.fields {
+        names = append(names, f.name)
+    }
+    return
+}
+
+// DynamicFields returns a map of concrete fields for a given wildcard.
+func ({{ .VarName }} *{{ .Name }}) DynamicFields(name string) (map[string][]string, error) {
+    for _, f := range {{ .VarName }}.fields {
+        if f.name == name {
+            return f.fmap, nil
+        }
+    }
+    return nil, fmt.Errorf("no such field: %s", name)
+}
+
 // toStringSlice returns a slice of strings
 func toStringSlice(is []interface{}) (values []string) {
 	for _, v := range is {
