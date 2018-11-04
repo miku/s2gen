@@ -24,13 +24,13 @@ Design](https://lucene.apache.org/solr/guide/6_6/documents-fields-and-schema-des
 The following features are implemented:
 
 * generating a struct from a SOLR schema.xml
-* marhsal an indexable JSON document from a struct
+* marshal an indexable JSON document from that struct
 * unmarshal SOLR documents into a struct including dynamic fields
 * static and dynamic fields with cardinality checks
 
 Not supported or low priority:
 
-* type inference (to many variations, so we use strings for now)
+* type inference (to many variations, so we only use strings for now)
 
 ## Example SOLR schema
 
