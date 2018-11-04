@@ -91,6 +91,17 @@ fmt.Println(string(b))
 * linter for solr documents
 * generic SOLR documents manipulation: fetch, unmarshal, modify, marshal, index.
 
+## Update the template
+
+For documentation purposes, the template should live in a separate file. For
+compiling the executable, we copy the template data into `main.go`.
+
+1. adjust [tmpl/document.tmpl](https://github.com/miku/s2gen/blob/master/tmpl/document.tmpl)
+2. copy from template into [main.go](https://github.com/miku/s2gen/blob/master/cmd/s2gen/main.go)
+3. re-generate
+   [example/generated/main.go](https://github.com/miku/s2gen/blob/master/example/generated/main.go)
+via `curl -sL https://git.io/fxhhz | ./s2gen > example/generated/main.go`
+
 ## Example
 
 ```go
