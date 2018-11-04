@@ -1,9 +1,7 @@
 # s2gen (solr struct generator)
 
 Another code generation experiment. Generate code to represent
-[SOLR](http://lucene.apache.org/solr/) documents in Go from a schema.xml file.
-
-This is an experimental project with many missing pieces.
+[SOLR](http://lucene.apache.org/solr/) documents in Go from a schema.xml file. This is an experimental project with many missing pieces.
 
 ## Install
 
@@ -24,8 +22,8 @@ Design](https://lucene.apache.org/solr/guide/6_6/documents-fields-and-schema-des
 
 The following features are implemented:
 
-* generating a struct from a SOLR schema.xml
-* marshal an indexable JSON document from that struct
+* generating a struct and methods from a SOLR schema.xml
+* marshal an indexable JSON document from a struct
 * unmarshal SOLR documents into a struct including dynamic fields
 * static and dynamic fields with cardinality checks
 
