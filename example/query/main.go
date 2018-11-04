@@ -453,7 +453,7 @@ type SolrResponse struct {
 }
 
 func main() {
-	solrQuery := "http://172.18.113.7:8085/solr/biblio/select?q=*:*&wt=json"
+	solrQuery := "http://1.18.1.7:8085/solr/biblio/select?q=*:*&wt=json"
 	resp, err := http.Get(solrQuery)
 	if err != nil {
 		log.Fatal(err)
