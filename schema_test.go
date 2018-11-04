@@ -42,7 +42,7 @@ func TestSchemaGeneration(t *testing.T) {
 	t.Logf("(3/5) temporary snippet written to %s", fo.Name())
 
 	// Running on sample input.
-	sample := "fixtures/docs01.ndj"
+	sample := "fixtures/input.json"
 
 	t.Logf("(4/5) running on input %s", sample)
 	cmd = exec.Command("go", "run", fo.Name())
