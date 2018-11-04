@@ -85,6 +85,20 @@ b, _ := json.Marshal(doc)
 fmt.Println(string(b))
 ```
 
+Command line options.
+
+```shell
+$ s2gen -h
+Usage of s2gen:
+  -F    skip formatting
+  -hs
+        add part of hash as suffix to struct name
+  -version
+        show version
+  -vs string
+        add some versioning suffix, like v0 to struct name
+```
+
 ## Use case
 
 
