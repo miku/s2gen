@@ -86,46 +86,10 @@ fmt.Println(string(b))
 
 ## Use case
 
-The use case is to allow for small converter programs for various formats:
 
-* generate struct from input XML or JSON
-* generate struct for target SOLR schema
-
-Then write a single function (should take a few minutes):
-
-```go
-func main() {
-    var s SourceDoc // e.g. XML
-    var t TargetDoc // e.g. SOLR
-
-    t.Field = s.Field
-    // Lookup, cleanup, filters.
-
-    b, _ := json.Marshal(t)
-    fmt.Println(string(b))
-}
-```
-
-Lookup tables should be aided by function to fetch mappings and tables from
-files, URLs, repos and more.
-
-Another use case is the parsing and manipulation of SOLR documents in general:
-fetch, parse, modify, serialize, index. For example, you want to rewrite a
-subset of documents and modify a single field, then reindex.
-
-For high-performance modifications, use smaller, focussed structs (with only
-one or two relevant fields).
-
-```go
-type Doc struct {
-    ID          string
-    ISSN        []string
-    Institution []string
-    ...
-}
-```
-
-* Parallel fetch, modification, indexing.
+* writing converters
+* linter for solr documents
+* generic SOLR documents manipulation: fetch, unmarshal, modify, marshal, index.
 
 ## Example
 
