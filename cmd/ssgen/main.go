@@ -3,18 +3,44 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"encoding/xml"
 	"flag"
 	"fmt"
+	"go/format"
 	"io"
 	"log"
 	"os"
+	"strings"
+	"text/template"
+
+	ssg "github.com/miku/solrstructgen"
 )
 
 var (
 	skipFormatting = flag.Bool("F", false, "skip formatting")
 )
+
+type field struct {
+	GoName string
+	GoType string
+	GoTag  string
+}
+
+type dynamicField struct {
+	Name          string
+	IsMultiValued string
+}
+
+// payload provides data for template.
+type payload struct {
+	Name          string
+	VarName       string
+	Digest        string
+	Fields        []field
+	DynamicFields []dynamicField
+}
 
 func main() {
 	flag.Parse()
@@ -30,7 +56,7 @@ func main() {
 		r = f
 	}
 
-	hash := sha1.New()
+	h := sha1.New()
 	tee := io.TeeReader(r, h)
 
 	dec := xml.NewDecoder(tee)
@@ -41,6 +67,64 @@ func main() {
 		log.Fatal(err)
 	}
 
-	digest := fmt.Sprintf("%x", hash.Sum(nil))
-	fmt.Println(digest)
+	digest := fmt.Sprintf("%x", h.Sum(nil))
+
+	// Fix name of type and variable name.
+	name := ssg.GoName(schema.Name)
+	if name == "" {
+		log.Fatal("the go name reduced to the empty string")
+	}
+	varName := strings.ToLower(name[0:1])
+
+	data := payload{
+		Name:    name,
+		VarName: varName,
+		Digest:  digest,
+	}
+
+	for _, f := range schema.Fields.Field {
+		ff := field{
+			GoName: ssg.GoName(f.Name),
+			GoTag:  fmt.Sprintf("`json:\"%s\"`", f.Name),
+		}
+		switch {
+		case f.Name == "_version_":
+			ff.GoType = "json.Number"
+		case f.MultiValued == "true":
+			ff.GoType = "[]string"
+		default:
+			ff.GoType = "string"
+		}
+		data.Fields = append(data.Fields, ff)
+	}
+
+	for _, f := range schema.Fields.DynamicField {
+		if f.MultiValued == "" {
+			f.MultiValued = "false"
+		}
+		ff := dynamicField{Name: f.Name, IsMultiValued: f.MultiValued}
+		data.DynamicFields = append(data.DynamicFields, ff)
+	}
+
+	// Render template.
+	t, err := template.New("document.tmpl").ParseFiles("tmpl/document.tmpl")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, data); err != nil {
+		log.Fatal(err)
+	}
+
+	// Format output.
+	if *skipFormatting {
+		fmt.Println(buf.String())
+	} else {
+		b, err := format.Source(buf.Bytes())
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(string(b))
+	}
 }
