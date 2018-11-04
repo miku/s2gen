@@ -1,4 +1,4 @@
-// ssgen takes as input a SOLR schema.xml and outputs structs and methods to
+// s2gen takes as input a SOLR schema.xml and outputs structs and methods to
 // access documents conforming to that schema.
 package main
 

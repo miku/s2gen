@@ -1,8 +1,8 @@
-solrstructgen: cmd/solrstructgen/main.go schema.go
+s2gen: cmd/s2gen/main.go schema.go
 	go build -o $@ $<
 
 test:
 	go test -v ./...
 
 clean:
-	rm -f solrstructgen
+	rm -f s2gen
