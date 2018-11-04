@@ -224,7 +224,9 @@ func ({{ .VarName }} *{{ .Name }}) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON unmarshals a document. It is not an error, if there are
 // fields, which do not fit neither into static of dynamic definitions.
+// As unmarshaling can happen in larger structs, a new value is created.
 func ({{ .VarName }} *{{ .Name }}) UnmarshalJSON(pp []byte) error {
+    *{{ .VarName }} = *New{{ .Name }}()
 	temp := make(map[string]interface{})
 	if err := json.Unmarshal(pp, &temp); err != nil {
 		return err
@@ -275,6 +277,23 @@ func ({{ .VarName }} *{{ .Name }}) DynamicFields(name string) (map[string][]stri
         }
     }
     return nil, fmt.Errorf("no such field: %s", name)
+}
+
+// Field returns the dynamic field with a given name. It is an error,
+// if the field does not exist.
+func ({{ .VarName }} *{{ .Name }}) Field(name string) (*dynamicField, error) {
+    for _, field := range {{ .VarName }}.fields {
+		if field.name == name {
+			return field, nil
+		}
+	}
+	return nil, fmt.Errorf("no such field: %s", name)
+}
+
+// MustField returns the field or nil.
+func ({{ .VarName }} *{{ .Name }}) MustField(name string) *dynamicField {
+	field, _ := v.Field(name)
+	return field
 }
 
 // toStringSlice returns a slice of strings

@@ -214,9 +214,10 @@ func (v *VuFindBibliographicIndex) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON unmarshals a document. It is not an error, if there are
-// fields, which do not fit neither into static of dynamic definitions.
+// fields, which do not fit neither into static of dynamic definitions. As
+// unmarshaling can happen in larger structs, a new value is created.
 func (v *VuFindBibliographicIndex) UnmarshalJSON(pp []byte) error {
-	// XXX: initialize dynamic fields.
+	*v = *NewVuFindBibliographicIndex()
 	temp := make(map[string]interface{})
 	if err := json.Unmarshal(pp, &temp); err != nil {
 		return err
@@ -271,7 +272,6 @@ func (v *VuFindBibliographicIndex) DynamicFields(name string) (map[string][]stri
 
 func (v *VuFindBibliographicIndex) Field(name string) (*dynamicField, error) {
 	for _, field := range v.fields {
-		log.Println(field.name, name)
 		if field.name == name {
 			return field, nil
 		}
@@ -280,10 +280,7 @@ func (v *VuFindBibliographicIndex) Field(name string) (*dynamicField, error) {
 }
 
 func (v *VuFindBibliographicIndex) MustField(name string) *dynamicField {
-	field, err := v.Field(name)
-	if err != nil {
-		log.Println(err)
-	}
+	field, _ := v.Field(name)
 	return field
 }
 
@@ -465,6 +462,6 @@ func main() {
 	}
 
 	for _, doc := range sr.Response.Docs {
-		fmt.Println(doc.Author, doc.Title, doc.MustField("format_*"))
+		fmt.Println(doc.Author, doc.Title, doc.MustField("format_*").MustValues("format_de15"))
 	}
 }
