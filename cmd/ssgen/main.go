@@ -12,14 +12,21 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/user"
 	"strings"
 	"text/template"
+	"time"
 
 	ssg "github.com/miku/solrstructgen"
 )
 
+const Version = "0.1.0"
+
 var (
-	skipFormatting = flag.Bool("F", false, "skip formatting")
+	skipFormatting   = flag.Bool("F", false, "skip formatting")
+	showVersion      = flag.Bool("version", false, "show version")
+	useHashSuffix    = flag.Bool("hs", false, "add part of hash as suffix to struct name")
+	useVersionSuffix = flag.String("vs", "", "add some versioning suffix, like v0 to struct name")
 )
 
 type field struct {
@@ -38,12 +45,20 @@ type payload struct {
 	Name          string
 	VarName       string
 	Digest        string
+	Date          string
+	User          string
+	Host          string
+	Version       string
 	Fields        []field
 	DynamicFields []dynamicField
 }
 
 func main() {
 	flag.Parse()
+	if *showVersion {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
 
 	var r io.Reader = os.Stdin
 
@@ -76,10 +91,32 @@ func main() {
 	}
 	varName := strings.ToLower(name[0:1])
 
+	if *useHashSuffix {
+		name = name + digest[0:8]
+	}
+	if *useVersionSuffix != "" {
+		name = name + *useVersionSuffix
+	}
+
+	// Some metadata.
+	usrName := "an unknown user"
+	usr, _ := user.Current()
+	if usr != nil {
+		usrName = usr.Username
+	}
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = "an unknown host"
+	}
+
 	data := payload{
 		Name:    name,
 		VarName: varName,
 		Digest:  digest,
+		Date:    time.Now().Format(time.RFC3339),
+		User:    usrName,
+		Host:    hostname,
+		Version: Version,
 	}
 
 	for _, f := range schema.Fields.Field {
