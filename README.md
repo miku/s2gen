@@ -102,9 +102,9 @@ Usage of s2gen:
 ## Use case
 
 
-* writing converters
-* linter for solr documents
-* generic SOLR documents manipulation: fetch, unmarshal, modify, marshal, index.
+* Writing format converters.
+* Writing linters for SOLR documents.
+* Generic SOLR documents manipulation: fetch, unmarshal, modify, marshal, index.
 
 ## Update the template
 
