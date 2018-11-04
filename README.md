@@ -1,4 +1,4 @@
-# solrstructgen
+# s2gen (solr struct generator)
 
 Generate code to represent SOLR documents in Go.
 
@@ -14,10 +14,9 @@ Design](https://lucene.apache.org/solr/guide/6_6/documents-fields-and-schema-des
 The following features are implemented:
 
 * generating a struct from a SOLR schema.xml
-* generating a indexable JSON document from a struct
-* parsing SOLR documents into a struct
-* static fields with types and cardinality
-* dynamic fields
+* marhsal an indexable JSON document from a struct
+* unmarshal SOLR documents into a struct including dynamic fields
+* static and dynamic fields with cardinality checks
 
 Not supported or low priority:
 
@@ -28,7 +27,7 @@ Not supported or low priority:
 First, generate the code from the SOLR schema.
 
 ```shell
-$ solrstructgen < schema.xml > schema.go
+$ s2gen < schema.xml > schema.go
 ```
 
 As an example, let say this generated a struct named `VuFindBibliographicIndex`
@@ -36,7 +35,7 @@ and a few helper functions. From here, you have various ways to populate the
 struct values.
 
 ```go
-var doc VuFindBibliographicIndex
+doc := NewVuFindBibliographicIndex()
 
 // Manipulate static fields, multi-valued fields are slices.
 doc.Fulltext = "This is the full text"
@@ -44,12 +43,6 @@ doc.Author = append(doc.Author, "Samuel Johnson")
 
 // Set a single dynamic field. Error, if dynamic field is not valid.
 err := doc.Set("format_de15", "Book")
-
-// Set values for a bunch of dynamic fields at once.
-err := doc.SetMap("format_*", map[string]interface{
-    "de_15": "Book",
-    "de_14": "Book",
-})
 
 // Create an indexable document.
 b, _ := json.Marshal(doc)
@@ -60,10 +53,10 @@ fmt.Println(string(b))
 
 The use case is to allow for small converter programs for various formats:
 
-* generate input XML or JSON struct
-* generate target XML, JSON or SOLR struct
+* generate struct from input XML or JSON
+* generate struct for target SOLR schema
 
-Then write a single function (should take less than one hour):
+Then write a single function (should take a few minutes):
 
 ```go
 func main() {
@@ -102,8 +95,8 @@ type Doc struct {
 
 ## TODO
 
-* [ ] schema.xml -> dynamic fields
-* [ ] marshal dynamic fields, MarshalJSON
-* [ ] unmarshal dynamic fields, UnmarshalJSON
+* [x] schema.xml -> dynamic fields
+* [x] marshal dynamic fields, MarshalJSON
+* [x] unmarshal dynamic fields, UnmarshalJSON
 * [ ] tests
 
