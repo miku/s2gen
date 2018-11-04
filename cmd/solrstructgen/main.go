@@ -42,6 +42,7 @@ func main() {
 	h := sha1.New()
 	tee := io.TeeReader(r, h)
 
+	// Decode schema.
 	dec := xml.NewDecoder(tee)
 	dec.Strict = false
 
@@ -79,14 +80,13 @@ func main() {
 	io.WriteString(&buf, "type ")
 
 	if schema.Name == "" {
-		log.Fatal("schema does not has a name")
+		log.Fatal("schema has no name")
 	}
 
 	io.WriteString(&buf, ssg.GoName(schema.Name))
 	io.WriteString(&buf, " struct {\n")
 
 	for _, f := range schema.Fields.Field {
-		log.Println(f.Name, f.Type)
 		switch {
 		case f.Name == "_version_":
 			fmt.Fprintf(&buf, "%s json.Number `json:\"%s\"`\n", ssg.GoName(f.Name), f.Name)
@@ -95,18 +95,12 @@ func main() {
 		default:
 			fmt.Fprintf(&buf, "%s string `json:\"%s\"`\n", ssg.GoName(f.Name), f.Name)
 		}
-		// XXX: Struct with normal fields.
 		// XXX: Methods to add dynamic fields with checks, e.g. doc.Set("field", "value")
 		// XXX: Custom JSON marshaller.
 	}
-	log.Printf("The %v %v schema contains %d static fields.\n",
-		schema.Name, schema.Version, len(schema.Fields.Field))
 
 	io.WriteString(&buf, `
-	dynamicFields []struct {
-		Key    string
-		Values []string
-	}
+	dynamicFields []DynamicField
 	`)
 
 	io.WriteString(&buf, "}")
@@ -118,28 +112,34 @@ func main() {
 	}
 
 	mtmpl := `
+	type DynamicField struct {
+		Name        string
+		MultiValued bool
+		Values      map[string][]string
+	}
+
 	// allowedDynamicFieldName returns true, if the name of the field matches
 	// one of the dynamic field patterns.
-	func ({{ .Var }} {{ .Name }}) allowedDynamicFieldName(k string) (ok bool, err error) {
+	func ({{ .Var }} {{ .Name }}) allowedDynamicFieldName(k string) error {
 		return WildcardMatch(k, {{ .NameSlice }})
 	}
 
-	// WildcardMatch returns true, if the wildcard covers a given string s. If the
+	// WildcardMatch returns nil, if the wildcard covers a given string s. If the
 	// wildcard is invalid, an error is returned.
-	func WildcardMatch(s string, wildcards []string) (bool, error) {
+	func WildcardMatch(s string, wildcards []string) error {
 		// XXX: It is possible, that a static field will match a dynamic field.
 		for _, w := range wildcards {
 			p := strings.Replace(w, "*", ".*", -1)
 			p = "^" + p + "$"
 			r, err := regexp.Compile(p)
 			if err != nil {
-				return false, err
+				return err
 			}
 			if r.MatchString(s) {
-				return true, nil
+				return nil
 			}
 		}
-		return false, nil
+		return fmt.Errorf("wildcards do not cover key: %s", s)
 	}
 
 	func main() {
