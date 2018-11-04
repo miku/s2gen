@@ -1,10 +1,7 @@
 package s2gen
 
 import (
-	"bytes"
 	"encoding/xml"
-	"fmt"
-	"io"
 	"strings"
 )
 
@@ -144,15 +141,4 @@ func GoName(s string) string {
 		}
 	}
 	return strings.Join(camel, "")
-}
-
-// RenderStringSlice renders a strings slice.
-func RenderStringSlice(s []string) string {
-	var buf bytes.Buffer
-	io.WriteString(&buf, "[]string{\n")
-	for _, v := range s {
-		fmt.Fprintf(&buf, "%q,\n", v)
-	}
-	io.WriteString(&buf, "}")
-	return buf.String()
 }
