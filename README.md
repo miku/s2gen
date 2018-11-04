@@ -22,6 +22,29 @@ Not supported or low priority:
 
 * type inference (to many variations, so we use strings for now)
 
+## Example SOLR schema
+
+```xml
+<schema name="VuFind Bibliographic Index" version="1.2">
+  ...
+  <fields>
+    <!-- Required by Solr 4.x -->
+    <field name="_version_" type="long" indexed="true" stored="true"/>
+    <!-- Core Fields  -->
+    <field name="id" type="string" indexed="true" stored="true"/>
+    <field name="fullrecord" type="string" indexed="false" stored="true"/>
+    ...
+    <!-- Dynamic fields for customization without schema modification -->
+    <dynamicField name="callnumber_*" type="code" indexed="true" stored="true" multiValued="true"/>
+    <dynamicField name="barcode_*" type="code" indexed="true" stored="true" multiValued="true"/>
+    <dynamicField name="misc_*" type="textFacet" indexed="true" stored="true" multiValued="true"/>
+  </fields>
+  <!-- Default Boolean Operator -->
+  <solrQueryParser defaultOperator="AND"/>
+  ...
+</schema>
+```
+
 ## Usage
 
 First, generate the code from the SOLR schema.
