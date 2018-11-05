@@ -592,3 +592,4 @@ func main() {
 * [ ] currently, `Set`, `Add`, `Clear`, `Value`, `Values` work on dynamic
   fields, which first must be accessed via `doc.MustField(name).Add(key,
 value)`, this might all be shortened to `doc.Add(key, value)` and so on.
+* [ ] rename to sxmlgen or similar
