@@ -190,7 +190,7 @@ import (
 // {{ .Name }} generated from schema.
 // This struct supports marshaling and unmarshaling of SOLR documents conforming to the
 // schema that was used to generate this struct. Static fields are struct fields, dynamic
-// fields can be modified by using {{ .VarName }}.Field("dyn_*").Set(...) and so on.
+// fields can be modified by using {{ .VarName }}.MustField("dyn_*").Set(...) and so on.
 type {{ .Name }} struct {
 	{{ range .Fields }}
 		{{ .GoName }} {{ .GoType }} {{ .GoTag -}}
@@ -227,8 +227,9 @@ func ({{ .VarName }} *{{ .Name }}) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON unmarshals a document. It is not an error, if there are
-// fields, which do not fit neither into static of dynamic definitions.
-// As unmarshaling can happen in larger structs, a new value is created.
+// fields, which do not fit neither into static of dynamic definitions.  As
+// unmarshaling can happen in larger structs, the dynamic fields are
+// initialized as part of the process.
 func ({{ .VarName }} *{{ .Name }}) UnmarshalJSON(pp []byte) error {
     {{ .VarName }}.initDynamicFields()
 	temp := make(map[string]interface{})
@@ -238,9 +239,6 @@ func ({{ .VarName }} *{{ .Name }}) UnmarshalJSON(pp []byte) error {
 	st := structs.New({{ .VarName }})
 	for _, field := range st.Fields() {
 		name := field.Tag("json")
-		if name == "" {
-			name = field.Name()
-		}
 		if value, ok := temp[name]; ok {
 			switch tv := value.(type) {
 			case float64, string, []string:
