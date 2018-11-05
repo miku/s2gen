@@ -20,7 +20,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const Version = "0.1.0"
+const Version = "0.1.1"
 
 var (
 	skipFormatting   = flag.Bool("F", false, "skip formatting")
@@ -201,15 +201,19 @@ type {{ .Name }} struct {
 
 // New{{ .Name }} creates a new document conforming to a schema for the dynamic fields.
 func New{{ .Name }}() *{{ .Name }} {
-	return &{{ .Name }}{
-		fields: []*dynamicField{
-			{{ range .DynamicFields -}}
-			&dynamicField{name: "{{ .Name }}", isMultiValued: {{ .IsMultiValued }}},
-			{{ end }}
-		},
-	}
+    var {{ .VarName }} {{ .Name }}
+    {{ .VarName }}.initDynamicFields()
+    return &{{ .VarName }}
 }
 
+// initDynamicFields will initialize or reset the dynamic fields.
+func ({{ .VarName }} *{{ .Name }}) initDynamicFields() {
+    {{ .VarName }}.fields = []*dynamicField{
+		{{ range .DynamicFields -}}
+		&dynamicField{name: "{{ .Name }}", isMultiValued: {{ .IsMultiValued }}},
+		{{ end }}
+    }
+}
 
 // MarshalJSON serialized static and dynamic fields.
 func ({{ .VarName }} *{{ .Name }}) MarshalJSON() ([]byte, error) {
@@ -226,7 +230,7 @@ func ({{ .VarName }} *{{ .Name }}) MarshalJSON() ([]byte, error) {
 // fields, which do not fit neither into static of dynamic definitions.
 // As unmarshaling can happen in larger structs, a new value is created.
 func ({{ .VarName }} *{{ .Name }}) UnmarshalJSON(pp []byte) error {
-    *{{ .VarName }} = *New{{ .Name }}()
+    {{ .VarName }}.initDynamicFields()
 	temp := make(map[string]interface{})
 	if err := json.Unmarshal(pp, &temp); err != nil {
 		return err
